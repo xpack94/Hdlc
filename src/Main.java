@@ -13,12 +13,18 @@ public class Main {
 		// TODO Auto-generated method stub
 
 		FileService fileService = new FileService();
-		List<String> data=fileService.readFile("/home/xpack/Desktop/question3-1.ipynb");
-		
-		
-		
+		List<String> data=fileService.readFile("/home/xpack/Desktop/test");
+
 		FrameService frameService=new FrameService();
-		frameService.createFrames(data);
+		
+		List<String> toBinary=frameService.dataToBinary(frameService.createFrames(data));
+		
+		
+		for (int i=0;i<toBinary.size();i++){
+			System.out.println(toBinary.get(i));
+		}
+		 
+		
 	}
 
 }

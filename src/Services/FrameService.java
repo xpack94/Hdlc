@@ -1,5 +1,6 @@
 package Services;
 
+import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -7,7 +8,13 @@ import Definitions.Frame;
 
 public class FrameService {
 
-	
+	/**
+	 * @param les données qui correspondent au lignes du fichier lu en entrée
+	 * @return une liste ou chaque element est une classe de type Frame contenant tout les headers necessaire
+	 * 
+	 * 
+	 * 
+	 * **/
 	public List<Frame> createFrames(List<String>data){
 		List<Frame> frames=new ArrayList<Frame>();
 		String type="";
@@ -24,12 +31,41 @@ public class FrameService {
 	}
 	
 	
+	/**
+	 * @param une liste d'element de type Frame 
+	 * @return une liste ou chaque element est encodé en binaire
+	 * 
+	 * methode qui fait la conversion d'une liste de trames en une liste de bits 
+	 * 
+	 * **/
+	public List<String> dataToBinary(List<Frame> data){
+		List<String> toBinary=new ArrayList<String>();
+		for(Frame frame : data){
+			toBinary.add(
+					frame.getFLAG()+
+					this.bitStuffing(this.bitConverter(frame.getType()))+
+					this.bitStuffing(this.bitConverter(""+frame.getNum()))+
+					this.bitStuffing(this.bitConverter(frame.getData()))+
+					this.bitStuffing(this.bitConverter(""+frame.getCrc()))+
+					frame.getFLAG()
+					);
+		}
+		return toBinary;
+	}
+	
+	/**
+	 * @param data de type string qui represente les données de la trame 
+	 * pour laquelle on calcule le crc 
+	 * les données correspondent au type + num+information de la trame
+	 * 
+	 * cette methode calcule le crc checksum et le retourne 
+	 * 
+	 * **/
 	public long createCrc(String data){
 		String poly="10001000000100001";
 		String polyToHexa=Integer.toHexString(Integer.parseInt(poly,2)); 
 		int WIDTH = (8 * 2);
 		int TOPBIT = (1 << (WIDTH - 1));
-		System.out.println();
 		int POLYNOMIAL = Integer.decode("0x"+polyToHexa);
 
         final byte message[] = data.getBytes();
@@ -55,9 +91,44 @@ public class FrameService {
         }
 
         return (rem);
-		    }
+		}
+	
+	public String bitConverter(String data){
+		System.out.println(new BigInteger(data.getBytes()).toString(2));
+		return new BigInteger(data.getBytes()).toString(2);
+		
+	}
 	
 	
 	
+	/**
+	 * @param les donnée pour lequel on fait le bit stuffing
+	 * 
+	 * @return une string contenant les données en entrée ainsi que des bits rajouté d'ou le nom bit stuffing
+	 * **/
+	public String bitStuffing(String data){
+		 
+		int cnt = 0; 
+	        String s = ""; 
+	        for (int i = 0; i < data.length(); i++) { 
+	            char ch = data.charAt(i); 
+	            if (ch == '1') { 
+	                cnt++; 
+	                if (cnt < 5) 
+	                    s += ch; 
+	                else { 
+	                    s = s + ch + '0'; 
+	                    cnt = 0; 
+	                } 
+	            } 
+	            else { 
+	                s += ch; 
+	                cnt = 0; 
+	            }
+	        }
+	        return s;
+		
+		
+	}
 	
 }

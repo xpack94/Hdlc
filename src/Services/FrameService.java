@@ -94,7 +94,6 @@ public class FrameService {
 		}
 	
 	public String bitConverter(String data){
-		System.out.println(new BigInteger(data.getBytes()).toString(2));
 		return new BigInteger(data.getBytes()).toString(2);
 		
 	}

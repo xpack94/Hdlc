@@ -12,9 +12,9 @@ public class Frame {
 	private String type;
 	private int num;
 	private String data;
-	private long crc;
+	private String crc;
 	
-	public Frame(String type,int num,String data,long crc){
+	public Frame(String type,int num,String data,String crc){
 		this.type=type;
 		this.num=num;
 		this.data=data;
@@ -45,11 +45,11 @@ public class Frame {
 		this.data = data;
 	}
 
-	public long getCrc() {
+	public String getCrc() {
 		return crc;
 	}
 
-	public void setCrc(long crc) {
+	public void setCrc(String crc) {
 		this.crc = crc;
 	}
 

@@ -37,7 +37,8 @@ public class FileService {
 			try {
 				line = buffer.readLine();
 				while( line!=null){
-					data.add(line);
+					if(line.length()>0)
+						data.add(line);
 					line=buffer.readLine();
 				}
 			} catch (IOException e) {

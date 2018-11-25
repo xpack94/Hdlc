@@ -1,7 +1,12 @@
 package Entities;
 
+import java.io.BufferedReader;
 import java.io.DataOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.OutputStream;
+import java.io.PrintWriter;
 import java.net.Socket;
 import java.net.UnknownHostException;
 import java.util.List;
@@ -51,15 +56,18 @@ public class Sender {
 	public void send(List<String> data,int port ,String host){
 		
 		try {
-			Socket socket =new Socket(host, port);
-			DataOutputStream dOut = new DataOutputStream(socket.getOutputStream());
+			 Socket socket =new Socket(host, port);
+			 DataOutputStream dOut = new DataOutputStream(socket.getOutputStream());
+			
+			 OutputStream output = socket.getOutputStream();
+	         PrintWriter writer = new PrintWriter(output, true);
             
             for(int i=0;i<data.size();i++){
-            	dOut.writeByte(i);
-            	dOut.writeUTF(data.get(i));
-            	dOut.flush(); 
+            	System.out.println("sending "+data.get(i));
+            	writer.println(data.get(i));
             }
             dOut.close();
+            socket.close();
 			
 		} catch (UnknownHostException e) {
 			// TODO Auto-generated catch block

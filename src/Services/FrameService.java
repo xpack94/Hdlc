@@ -23,7 +23,7 @@ public class FrameService {
 		for(int i=0;i<data.size();i++){
 			type="i";
 			num=i%8;
-			crc=this.createCrc(""+this.bitConverter(type+num+data.get(i)));
+			crc=this.createCrc(""+this.bitConverter(type)+this.bitConverter(""+num)+this.bitConverter(data.get(i)));
 			frames.add(new Frame(type,num,data.get(i),crc));
 		}
 		return frames;
@@ -53,39 +53,6 @@ public class FrameService {
 		return toBinary;
 	}
 	
-	
-	/*public long createCrc(String data){
-		String poly="10001000000100001";
-		String polyToHexa=Integer.toHexString(Integer.parseInt(poly,2)); 
-		int WIDTH = (8 * 2);
-		int TOPBIT = (1 << (WIDTH - 1));
-		int POLYNOMIAL = Integer.decode("0x"+polyToHexa);
-
-        final byte message[] = data.getBytes();
-        int nBytes = message.length;
-        if(nBytes<1) return 0;
-        long rem = 0; 
-        int b;
-        for(b=0;b<nBytes;++b)
-        {
-            rem ^= (message[b] << (WIDTH - 8));
-            byte bit;
-            for(bit=8;bit>0;--bit)
-            {
-                if ((rem & TOPBIT)>0)
-                {
-                    rem = (rem<< 1) ^ POLYNOMIAL;
-                }
-                else
-                {
-                    rem = (rem << 1);
-                }
-            }
-        }
-
-        return (rem);
-		}
-	*/
 	
 	/**
 	 * @param data de type string qui represente les données de la trame 
@@ -155,7 +122,12 @@ public class FrameService {
 	 * 
 	 * **/
 	public boolean checkErrors(String data){
-		return !(Integer.parseInt(this.div(data, this.POLYNOM))==0);
+		try{
+			return !(Integer.parseInt(this.div(data, this.POLYNOM))==0);
+		}catch(Exception e){
+			return true; 
+		}
+		
 	}
 	/**
 	 * @param une chaine de caractaire 

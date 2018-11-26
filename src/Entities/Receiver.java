@@ -53,24 +53,33 @@ public class Receiver {
          
 	}
 	
+	/**
+	 * @param la trame en bits reçu par l'emetteur
+	 * 
+	 * cette methode s'occupe de verifié la validé 
+	 * 
+	 * **/
 	private void handleInput(String msg){
 		FrameService fService=new FrameService();
-		System.out.println("message "+msg);
 		msg=msg.substring(8,msg.length()-8);  //enlever les flags de debut et de fin 
 		msg=fService.removeBitStuffing(msg); // supprimer le bit stuffing 
 		//verifier si le message reçu contient des erreurs
 		if(fService.checkErrors(msg)){
-			System.out.println("contient des erreurs");
+			this.sendRej(msg); // demande de retransmission 
 		}else{
 			// aucune erreur n'est detéctée 
 			//on affiche alors le message envoyé 
 			this.printSentMessage(msg);
+			this.sendAck(msg); // envoi de l'acuser de réception
 			
-		}
-		
-		
-		
+		}	
 	}
+	/**
+	 * @param le message reçu sous forme de bits 
+	 * 
+	 * la methode qui fait la convertion en string du message reçu et le print
+	 * 
+	 * **/
 	private void printSentMessage(String msg){
 		//enlever les bits du type ainsi que le num et le crc
 		String extractedMessage=msg.substring(13,msg.length()-16);
@@ -79,17 +88,44 @@ public class Receiver {
 		System.out.println("reçu "+receivedMessage);
 		
 	}
-
+	
 	/**
-	 * @param le numero du port
-	 * la methode qui permet de crée un serveur qui écoute sur un port donnée
+	 * @param la trame reçu
+	 * 
+	 * cette methode envoie la trame contenant le code d'erreur Rej a l'emmeteur 
+	 * pour que ce dernier renvoi la trame erronée
+	 * 
+	 * **/
+	private void sendRej(String msg){
+		// creer la trame contenant le type Rej
+		String rejFrame=msg.substring(0,8)+"Rej"+msg.substring(13,msg.length()-16)+msg.substring(msg.length()-16,msg.length());
+		this.writer.println(rejFrame);
+		
+	}
+	
+	/**
+	 * @param la trame reçu 
+	 * cette methode envoi la trame contenant le type RR qui correspond a l'acuser de réception
+	 * 
+	 * **/
+	private void sendAck(String msg){
+		// creer la trame contenant le type RR 
+		String ackFrame=msg.substring(0,8)+"RR"+msg.substring(13,msg.length()-16)+msg.substring(msg.length()-16,msg.length());
+		this.writer.println(ackFrame);
+	}
+	
+	
+	/**
+	 * @param le port sur lequel le serveur doit écouté 
+	 * 
+	 * methode qui crée un serveur écoutant sur un port donnée 
 	 * 
 	 * **/
 	public void createServer(int port){
 		
 		try{
 			ServerSocket serverSocket = new ServerSocket(port);
-			System.out.println("Server is listening on port " + port);
+			System.out.println("le serveur écoute sur le port " + port);
 			  
 			this.socket = serverSocket.accept();
             OutputStream output = socket.getOutputStream();

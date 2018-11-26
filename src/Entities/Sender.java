@@ -18,6 +18,9 @@ import Services.FrameService;
 public class Sender {
 
 	
+	private  PrintWriter writer;
+	private BufferedReader reader;
+	
 	public void messageSenderControler(String filePath,int port,String host){
 		// on prépare les données a envoyer 
 		List<String> dataToSend=this.prepareSending(filePath);
@@ -59,12 +62,18 @@ public class Sender {
 			 Socket socket =new Socket(host, port);
 			 DataOutputStream dOut = new DataOutputStream(socket.getOutputStream());
 			
+			 InputStream input = socket.getInputStream();
+             this.reader = new BufferedReader(new InputStreamReader(input));
+			 
 			 OutputStream output = socket.getOutputStream();
-	         PrintWriter writer = new PrintWriter(output, true);
-            
+	         this.writer = new PrintWriter(output, true);
+	        
+	         
             for(int i=0;i<data.size();i++){
             	System.out.println("sending "+data.get(i));
             	writer.println(data.get(i));
+            	String response=reader.readLine(); // lire la réponse du receveur 
+            	this.handleResponse(response,data,i);
             }
             dOut.close();
             socket.close();
@@ -75,6 +84,16 @@ public class Sender {
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
+		}
+	}
+	private void handleResponse(String response,List<String> data,int index){
+		if(response.contains("Rej")){
+			// faire une retransmission de la trame erronéé
+			this.writer.println(data.get(index));
+			
+		}else if(response.contains("RR")){
+			//message bien reçu
+			System.out.println("accusé de réception");
 		}
 	}
 	

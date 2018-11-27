@@ -20,6 +20,13 @@ public class Sender {
 	
 	private  PrintWriter writer;
 	private BufferedReader reader;
+	private FrameService frameService;
+	private FileService fileService;
+	
+	public Sender(){
+		this.frameService=new FrameService();
+		this.fileService=new FileService();
+	}
 	
 	public void messageSenderControler(String filePath,int port,String host){
 		// on prépare les données a envoyer 
@@ -31,13 +38,12 @@ public class Sender {
 	
 	
 	public List<String> prepareSending(String filePath){
-		FileService fileService = new FileService();
-		// on li le fichier a envoyér 
-		List<String> data=fileService.readFile(filePath);
 		
-		FrameService frameService=new FrameService();
+		// on li le fichier a envoyér 
+		List<String> data=this.fileService.readFile(filePath);
+		
 		// on cree une liste de trames
-		List<Frame>frames=frameService.createFrames(data);
+		List<Frame>frames=this.frameService.createFrames(data);
 		
 		// on fait la conversion des trames en bits et on retourne le resultat
 		return frameService.dataToBinary(frames);

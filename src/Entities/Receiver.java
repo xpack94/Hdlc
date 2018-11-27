@@ -19,6 +19,12 @@ public class Receiver {
 	
 	private PrintWriter writer;
 	private Socket socket;
+	private FrameService frameService;
+	
+	
+	public Receiver(){
+		this.frameService=new FrameService();
+	}
 	
 	public void receiverController(int port){
 		this.createServer(port);
@@ -60,11 +66,11 @@ public class Receiver {
 	 * 
 	 * **/
 	private void handleInput(String msg){
-		FrameService fService=new FrameService();
+		
 		msg=msg.substring(8,msg.length()-8);  //enlever les flags de debut et de fin 
-		msg=fService.removeBitStuffing(msg); // supprimer le bit stuffing 
+		msg=this.frameService.removeBitStuffing(msg); // supprimer le bit stuffing 
 		//verifier si le message reçu contient des erreurs
-		if(fService.checkErrors(msg)){
+		if(this.frameService.checkErrors(msg)){
 			this.sendRej(msg); // demande de retransmission 
 		}else{
 			// aucune erreur n'est detéctée 
@@ -142,17 +148,6 @@ public class Receiver {
 		}
 	}
 	
-
-	
-	
-	public static void main(String []args ){
-		
-		Receiver receiver=new Receiver();
-		int port =6868;
-		receiver.receiverController(port);
-		
-		
-	}
 	
 	
 }

@@ -14,6 +14,7 @@ import java.util.List;
 import Definitions.Frame;
 import Services.FileService;
 import Services.FrameService;
+import Tests.Test;
 
 public class Sender {
 
@@ -22,6 +23,7 @@ public class Sender {
 	private BufferedReader reader;
 	private FrameService frameService;
 	private FileService fileService;
+	private int WINDOW_WIDTH=8; // la taille d'une fenetre a envoyer est de 8 trame 
 	
 	public Sender(){
 		this.frameService=new FrameService();
@@ -31,6 +33,7 @@ public class Sender {
 	public void messageSenderControler(String filePath,int port,String host){
 		// on prépare les données a envoyer 
 		List<String> dataToSend=this.prepareSending(filePath);
+		
 		// on envoie les données 
 		this.send(dataToSend,port,host);
 		
@@ -44,7 +47,6 @@ public class Sender {
 		
 		// on cree une liste de trames
 		List<Frame>frames=this.frameService.createFrames(data);
-		
 		// on fait la conversion des trames en bits et on retourne le resultat
 		return frameService.dataToBinary(frames);
 	}
@@ -73,16 +75,25 @@ public class Sender {
 			 
 			 OutputStream output = socket.getOutputStream();
 	         this.writer = new PrintWriter(output, true);
-	        
+	         int windowCounter=0;
 	         
+	        //data=new Test().flipBits(data);
+	        
             for(int i=0;i<data.size();i++){
             	System.out.println("sending "+data.get(i));
             	writer.println(data.get(i));
-            	String response=reader.readLine(); // lire la réponse du receveur 
-            	this.handleResponse(response,data,i);
+            	if(i%(this.WINDOW_WIDTH-1)==0 && i!=0){
+            		// changement de fenetre 
+            		this.readResponses(data,windowCounter);
+            		windowCounter+=this.WINDOW_WIDTH;
+            		
+            	}
+            	
+            	
             }
             dOut.close();
             socket.close();
+            System.out.println("fin de la transmission!");
 			
 		} catch (UnknownHostException e) {
 			// TODO Auto-generated catch block
@@ -92,12 +103,42 @@ public class Sender {
 			e.printStackTrace();
 		}
 	}
-	private void handleResponse(String response,List<String> data,int index){
-		if(response.contains("Rej")){
-			// faire une retransmission de la trame erronéé
-			this.writer.println(data.get(index));
+	
+	private void readResponses(List<String> data,int windowCounter){
+		for(int i=0;i<this.WINDOW_WIDTH;i++){
+			String response;
+			try {
+				response = this.reader.readLine();
+				if(response!=null)
+		    		this.handleResponse(response,data,windowCounter);
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} // lire la réponse du receveur 
 			
-		}else if(response.contains("RR")){
+		}
+		
+	}
+	
+	/**
+	 * @param une suite de bits qui correspond a la reponse du receveur
+	 * @param l'ensemble des donnée envoyé au receveur  
+	 * @param l'indice qui represente le numero de la fenetre sur laquelle on est presentement (une fenetre est de taille 8 trames)
+	 * 
+	 * la methode qui permet de filtrer la reponse du receveur qui peut etre 
+	 * soit de type A dans ce cas c'est un accusé de réception 
+	 * soit de type R dans ce cas c'est une demande de retransmission
+	 * **/
+	private void handleResponse(String response,List<String> data,int current){
+		String type=this.frameService.fromBinaryToString(response.substring(0,7)); // extraire et convertir le type d'une suite  bits en suite de charactaire
+		int frameIndexToResend=Integer.parseInt(response.substring(9,12),2); // extraire le num de la trame erroné 
+		
+		if(type.toUpperCase().equals("R")){
+			// faire une retransmission de la trame erronéé
+			System.out.println("retransmission de "+data.get(frameIndexToResend+current));
+			this.writer.println(data.get(frameIndexToResend+current));
+			
+		}else if(type.toUpperCase().equals("A")){
 			//message bien reçu
 			System.out.println("accusé de réception");
 		}

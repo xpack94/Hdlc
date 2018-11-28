@@ -26,6 +26,9 @@ public class FrameService {
 			crc=this.createCrc(""+this.bitConverter(type)+this.bitConverter(""+num)+this.bitConverter(data.get(i)));
 			frames.add(new Frame(type,num,data.get(i),crc));
 		}
+		
+		frames.add(new Frame("f", 00, "00", "00")); // creation de la trame de fin 
+		
 		return frames;
 		
 	}
@@ -140,6 +143,15 @@ public class FrameService {
 	public String bitConverter(String data){
 		return new BigInteger(data.getBytes()).toString(2);
 		
+	}
+	
+	/**
+	 * permet de faire la conversion d'une trame de bits en une suite de caractaires
+	 * 
+	 * @param la trame en bits 
+	 * **/
+	public String fromBinaryToString(String data){
+		return new String(new BigInteger(data, 2).toByteArray());
 	}
 	
 	

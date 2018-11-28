@@ -1,16 +1,16 @@
 package Entities;
 
+import java.util.List;
 import java.io.BufferedReader;
-import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.PrintWriter;
-import java.math.BigInteger;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.UnknownHostException;
+import java.util.ArrayList;
 
 import Services.FrameService;
 
@@ -20,7 +20,7 @@ public class Receiver {
 	private PrintWriter writer;
 	private Socket socket;
 	private FrameService frameService;
-	
+	private int WINDOW_WIDTH=8; // la taille d'une fenetre a envoyer est de 8 trame
 	
 	public Receiver(){
 		this.frameService=new FrameService();
@@ -42,14 +42,25 @@ public class Receiver {
 		try {
 			input = this.socket.getInputStream();
 			BufferedReader reader = new BufferedReader(new InputStreamReader(input));
-			
-			String receivedMsg=reader.readLine();
-			while(receivedMsg!=null){
-				this.handleInput(receivedMsg);
+			List<String> receivedFrames=new ArrayList<String>();
+			int counter=0;
+			String receivedMsg="";
+			do{
 				receivedMsg=reader.readLine();
-			}
-			this.socket.close(); // fermer la socket 
+				counter++;
+				System.out.println(counter%this.WINDOW_WIDTH);
+				if(counter%this.WINDOW_WIDTH==0){
+					receivedFrames.add(receivedMsg); // ajout de la derniere trame du message courant
+					this.handleReceivedWindowMessages(receivedFrames); // traité toutes les trames de la fenetre currente
+					receivedFrames.clear(); // vider la liste pour les prochaine fenetres 
+				}else{
+					// sauvgarder les trames reçu dans la liste 
+					receivedFrames.add(receivedMsg);
+				}
+			}while(!isEnd(receivedMsg));
 			
+			if(receivedFrames.size()>0) this.handleReceivedWindowMessages(receivedFrames); 
+
 			
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
@@ -57,6 +68,34 @@ public class Receiver {
 		}
          
          
+		
+	}
+	private void handleReceivedWindowMessages(List<String> receivedMessages){
+		for(String receivedMessage:receivedMessages){
+			if(!isEnd(receivedMessage)){
+				this.handleInput(receivedMessage);
+				
+			}
+		}
+	}
+	/**
+	 * 
+	 * @param la trame reçu 
+	 * 
+	 * verifie si c'est la fin de la transmission 
+	 * 
+	 * **/
+	private boolean isEnd(String msg){
+		if(msg!=null){
+			String type = msg.substring(8,15); //extraire le type de la trame 
+			
+			if(this.frameService.fromBinaryToString(type).equals("f")){
+				//fin de la transmission
+				return true;
+			}
+		}
+		
+		return false;
 	}
 	
 	/**
@@ -71,6 +110,7 @@ public class Receiver {
 		msg=this.frameService.removeBitStuffing(msg); // supprimer le bit stuffing 
 		//verifier si le message reçu contient des erreurs
 		if(this.frameService.checkErrors(msg)){
+			System.out.println("found error");
 			this.sendRej(msg); // demande de retransmission 
 		}else{
 			// aucune erreur n'est detéctée 
@@ -90,7 +130,7 @@ public class Receiver {
 		//enlever les bits du type ainsi que le num et le crc
 		String extractedMessage=msg.substring(13,msg.length()-16);
 		//convertion de bits en string
-		String receivedMessage= new String(new BigInteger(extractedMessage, 2).toByteArray());
+		String receivedMessage=this.frameService.fromBinaryToString(extractedMessage);
 		System.out.println("reçu "+receivedMessage);
 		
 	}
@@ -103,8 +143,9 @@ public class Receiver {
 	 * 
 	 * **/
 	private void sendRej(String msg){
+	
 		// creer la trame contenant le type Rej
-		String rejFrame=msg.substring(0,8)+"Rej"+msg.substring(13,msg.length()-16)+msg.substring(msg.length()-16,msg.length());
+		String rejFrame=this.frameService.bitConverter("R")+msg.substring(8,msg.length());
 		this.writer.println(rejFrame);
 		
 	}
@@ -116,7 +157,8 @@ public class Receiver {
 	 * **/
 	private void sendAck(String msg){
 		// creer la trame contenant le type RR 
-		String ackFrame=msg.substring(0,8)+"RR"+msg.substring(13,msg.length()-16)+msg.substring(msg.length()-16,msg.length());
+		
+		String ackFrame=this.frameService.bitConverter("A")+msg.substring(8,msg.length());
 		this.writer.println(ackFrame);
 	}
 	

@@ -44,16 +44,25 @@ public class FrameService {
 	public List<String> dataToBinary(List<Frame> data){
 		List<String> toBinary=new ArrayList<String>();
 		for(Frame frame : data){
-			toBinary.add(
-					frame.getFLAG()+
-					this.bitStuffing(this.bitConverter(frame.getType()))+
-					this.bitStuffing(this.bitConverter(""+frame.getNum()))+
-					this.bitStuffing(this.bitConverter(frame.getData()))+
-					this.bitStuffing(""+frame.getCrc())+
-					frame.getFLAG()
-					);
+			toBinary.add(this.handleOneFrame(frame));
 		}
 		return toBinary;
+	}
+	
+	public String handleOneFrame(Frame frame){
+
+		
+		return frame.getFLAG()+				
+				this.bitStuffing(
+						this.bitConverter(frame.getType())+
+						this.bitConverter(""+frame.getNum())+
+						this.bitConverter(frame.getData())+
+						frame.getCrc()
+						)+
+				frame.getFLAG();
+				
+		
+		
 	}
 	
 	
@@ -161,7 +170,7 @@ public class FrameService {
 	 * 
 	 * @return une string contenant les données en entrée ainsi que des bits rajouté d'ou le nom bit stuffing
 	 * **/
-	public String bitStuffing(String data){
+	/*public String bitStuffing(String data){
 		 
 		int cnt = 0; 
 	        String s = ""; 
@@ -184,6 +193,31 @@ public class FrameService {
 	        return s;
 		
 		
+	}*/
+	
+	public String bitStuffing(String data){
+	
+		 int counter = 0;
+		 String res = new String();
+		 for(int i=0;i<data.length();i++)
+         {
+            if(data.charAt(i) == '1')
+                 {
+                     counter++;
+                     res = res + data.charAt(i);
+                 }
+            else
+                 {
+                     res = res + data.charAt(i);
+                     counter = 0;
+                 }
+            if(counter == 5)
+                 {	
+                     res = res + '0';
+                     counter = 0;
+                 }
+         }
+		 return res;
 	}
 	
 	/**
@@ -194,7 +228,6 @@ public class FrameService {
 	 * 
 	 * **/
 	public String removeBitStuffing(String stuffedFrame){
-		
 		int counter=0;
 		String out="";
 		 for(int i=0;i<stuffedFrame.length();i++){
@@ -207,11 +240,11 @@ public class FrameService {
           		}
             if(counter == 5){
                if((i+2)!=stuffedFrame.length())
-               out = out + stuffedFrame.charAt(i+2);
-               else
-               out=out + '1';
-               i=i+2;
-               counter = 1;
+            	   out = out + stuffedFrame.charAt(i+2);
+            	else
+            		break;
+                  i=i+2;
+                  counter = 1;
                  }
 		 }
 		 return out;

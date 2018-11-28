@@ -75,15 +75,47 @@ public class Receiver {
          
 		
 	}
+	synchronized
+	private void listenForRetransmission(int numberOfResentFrames){
+		InputStream input;
+		try {
+			input = this.socket.getInputStream();
+			BufferedReader reader = new BufferedReader(new InputStreamReader(input));
+			List<String> receivedFrames=new ArrayList<String>();
+			String receivedMsg="";
+			int counter=0;
+			while(counter<numberOfResentFrames){
+				receivedMsg=reader.readLine();
+				receivedFrames.add(receivedMsg);
+				counter++;
+			}
+			this.handleReceivedWindowMessages(receivedFrames);
+		
+		
+		
+		
+		}catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+	}
+	
 	/**
 	 * methode qui s'occupe gerer tout les trames reçu 
 	 * 
 	 * @param la liste des trames reçu 
 	 * **/
 	private void handleReceivedWindowMessages(List<String> receivedMessages){
+		int index=0;
+		int length=receivedMessages.size();
 		for(String receivedMessage:receivedMessages){
 			if(!isEnd(receivedMessage)){
-				this.handleInput(receivedMessage);
+				index++;
+				if(!this.handleInput(receivedMessage)){
+					this.listenForRetransmission(length-index+1);
+					break;
+				}
 				
 			}
 		}
@@ -114,13 +146,14 @@ public class Receiver {
 	 * cette methode s'occupe de verifié la validé 
 	 * 
 	 * **/
-	private void handleInput(String msg){
+	private boolean handleInput(String msg){
 		
 		msg=msg.substring(8,msg.length()-8);  //enlever les flags de debut et de fin 
 		msg=this.frameService.removeBitStuffing(msg); // supprimer le bit stuffing 
 		//verifier si le message reçu contient des erreurs
 		if(this.frameService.checkErrors(msg)){
 			this.sendRej(msg); // demande de retransmission 
+			return false;
 		}else{
 			// aucune erreur n'est detéctée 
 			//on affiche alors le message envoyé 
@@ -128,6 +161,7 @@ public class Receiver {
 			this.sendAck(msg); // envoi de l'acuser de réception
 			
 		}	
+		return true;
 	}
 	/**
 	 * @param le message reçu sous forme de bits 

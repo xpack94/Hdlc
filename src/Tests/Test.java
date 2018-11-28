@@ -21,9 +21,7 @@ public class Test {
 		int upperBound=data.get(randomFrameIndex).length()-16;
 		int lowerBound=8;
 		int randomBitToFlip=new Random().nextInt(upperBound-lowerBound)+lowerBound;
-		System.out.println("before flipping index "+randomBitToFlip+" "+data.get(randomFrameIndex));
 		data.set(randomFrameIndex,flipBit(randomBitToFlip, data.get(randomFrameIndex)));
-		System.out.println("after flipping index "+randomBitToFlip+" "+data.get(randomFrameIndex));
 		return data;
 		
 	}

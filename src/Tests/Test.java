@@ -17,12 +17,30 @@ public class Test {
 	 * **/
 	public List<String> flipBits(List<String>data ){
 		
-		int randomFrameIndex=new Random().nextInt(data.size()); // generer un nombre au hasard 
-		int randomBitToFlip=new Random().nextInt(data.get(randomFrameIndex).length()-16);
+		int randomFrameIndex=new Random().nextInt(data.size()-1); // generer un nombre au hasard 
+		int upperBound=data.get(randomFrameIndex).length()-16;
+		int lowerBound=8;
+		int randomBitToFlip=new Random().nextInt(upperBound-lowerBound)+lowerBound;
+		System.out.println("before flipping index "+randomBitToFlip+" "+data.get(randomFrameIndex));
 		data.set(randomFrameIndex,flipBit(randomBitToFlip, data.get(randomFrameIndex)));
-		
+		System.out.println("after flipping index "+randomBitToFlip+" "+data.get(randomFrameIndex));
 		return data;
 		
+	}
+	
+	
+	/**
+	 * efface une trame au hasard 
+	 * @param la liste des trames 
+	 * @return la meme liste de trame mais avec une trame effacé 
+	 * 
+	 * 
+	 * **/
+	public static List<String> removeFrame(List<String> data){
+		List<String> frames = data;
+		int randomFrameIndex=new Random().nextInt(data.size()-1); // generer un nombre au hasard 
+		frames.remove(randomFrameIndex);
+		return frames;
 	}
 	
 	
@@ -50,9 +68,8 @@ public class Test {
 	 * 
 	 * **/
 	public String flipBit(int bitToFlip,String data){
-		char bit=(char) data.indexOf(bitToFlip);
-		System.out.println(data+" "+data.charAt(bitToFlip));
-		return data.substring(0,bitToFlip)+(data.indexOf(bitToFlip)=='0'?'1':'0')+data.substring(bitToFlip+1,data.length());
+		
+		return data.substring(0,bitToFlip)+(data.charAt(bitToFlip)=='0'?'1':'0')+data.substring(bitToFlip+1,data.length());
 	}
 	
 	

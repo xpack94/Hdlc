@@ -48,7 +48,6 @@ public class Receiver {
 			do{
 				receivedMsg=reader.readLine();
 				counter++;
-				System.out.println(counter%this.WINDOW_WIDTH);
 				if(counter%this.WINDOW_WIDTH==0){
 					receivedFrames.add(receivedMsg); // ajout de la derniere trame du message courant
 					this.handleReceivedWindowMessages(receivedFrames); // traité toutes les trames de la fenetre currente
@@ -110,7 +109,6 @@ public class Receiver {
 		msg=this.frameService.removeBitStuffing(msg); // supprimer le bit stuffing 
 		//verifier si le message reçu contient des erreurs
 		if(this.frameService.checkErrors(msg)){
-			System.out.println("found error");
 			this.sendRej(msg); // demande de retransmission 
 		}else{
 			// aucune erreur n'est detéctée 

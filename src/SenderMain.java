@@ -16,7 +16,6 @@ public class SenderMain {
 
 		int port=6868;
 		String host ="localhost";
-		System.out.println(new FrameService().bitConverter("h")); 
 		Sender sender =new Sender();
 		sender.messageSenderControler("/home/xpack/Desktop/test",port,host);
 

@@ -24,6 +24,8 @@ public class Sender {
 	private FrameService frameService;
 	private FileService fileService;
 	private int WINDOW_WIDTH=8; // la taille d'une fenetre a envoyer est de 8 trame 
+	private boolean FLIPBITS=false;
+	private boolean REMOVEBITS=true;
 	
 	public Sender(){
 		this.frameService=new FrameService();
@@ -76,23 +78,35 @@ public class Sender {
 			 OutputStream output = socket.getOutputStream();
 	         this.writer = new PrintWriter(output, true);
 	         int windowCounter=0;
-	         
-	        //data=new Test().flipBits(data);
+	         // simulation d'erreur
+	         if(this.FLIPBITS){
+	        	 //inverser un des bits d'une des trames 
+	        	 data=new Test().flipBits(data);
+	         }
+	         if(this.REMOVEBITS){
+	        	 //supprimer une des trames au hasard 
+	        	 data=new Test().removeFrame(data);
+	         }
+	       
 	        
             for(int i=0;i<data.size();i++){
             	System.out.println("sending "+data.get(i));
             	writer.println(data.get(i));
             	if(i%(this.WINDOW_WIDTH-1)==0 && i!=0){
             		// changement de fenetre 
-            		this.readResponses(data,windowCounter);
-            		windowCounter+=this.WINDOW_WIDTH;
             		
+            		this.readResponses(data,windowCounter);
+            		windowCounter+=this.WINDOW_WIDTH-1;
             	}
             	
             	
             }
-            dOut.close();
-            socket.close();
+            if(data.size()%this.WINDOW_WIDTH!=0){
+            	this.readResponses(data,windowCounter);
+            	 dOut.close();
+                 socket.close();
+            }
+           
             System.out.println("fin de la transmission!");
 			
 		} catch (UnknownHostException e) {
@@ -104,11 +118,18 @@ public class Sender {
 		}
 	}
 	
+	/**
+	 * @param la liste des trames 
+	 * @param le compteur indiquant le numero de la fenetre courante
+	 * methode qui gere les réponses envoyés du receveur pour chaque fenetre 
+	 * 
+	 * 
+	 * **/
 	private void readResponses(List<String> data,int windowCounter){
 		for(int i=0;i<this.WINDOW_WIDTH;i++){
-			String response;
+			String response=null;
 			try {
-				response = this.reader.readLine();
+				if(this.reader!=null) response =this.reader.readLine();
 				if(response!=null)
 		    		this.handleResponse(response,data,windowCounter);
 			} catch (IOException e) {
@@ -134,10 +155,11 @@ public class Sender {
 		int frameIndexToResend=Integer.parseInt(response.substring(9,12),2); // extraire le num de la trame erroné 
 		
 		if(type.toUpperCase().equals("R")){
-			// faire une retransmission de la trame erronéé
-			System.out.println("retransmission de "+data.get(frameIndexToResend+current));
-			this.writer.println(data.get(frameIndexToResend+current));
-			
+			// faire une retransmission de la trame erronée
+			if(frameIndexToResend+current<=data.size()){
+				System.out.println("retransmission de "+data.get(frameIndexToResend+current));
+				//this.writer.println(data.get(frameIndexToResend+current));
+			}	
 		}else if(type.toUpperCase().equals("A")){
 			//message bien reçu
 			System.out.println("accusé de réception");

@@ -106,23 +106,23 @@ public class Sender {
             for(int i=0;i<data.size();i++){
             	System.out.println("sending "+data.get(i));
             	writer.println(data.get(i));
-            	if(i%(this.WINDOW_WIDTH-1)==0 && i!=0){
+            	if((i+1)%this.WINDOW_WIDTH==0 && i!=0){
             		// changement de fenetre 
             		
             		this.readResponses(data,windowCounter);
-            		windowCounter+=this.WINDOW_WIDTH-1;
+            		windowCounter+=this.WINDOW_WIDTH;
             	}
             	
             	
             }
             if(data.size()%this.WINDOW_WIDTH!=0){
             	this.readResponses(data,windowCounter);
-            	 dOut.close();
-                 socket.close();
+            	
             }
            
             System.out.println("fin de la transmission!");
-			
+            dOut.close();
+            socket.close();
 		} catch (UnknownHostException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();

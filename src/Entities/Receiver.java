@@ -57,6 +57,7 @@ public class Receiver {
 					receivedFrames.add(receivedMsg); // ajout de la derniere trame du message courant
 					this.handleReceivedWindowMessages(receivedFrames); // traité toutes les trames de la fenetre currente
 					receivedFrames.clear(); // vider la liste pour les prochaine fenetres 
+					counter=0;
 				}else{
 					// sauvgarder les trames reçu dans la liste 
 					receivedFrames.add(receivedMsg);

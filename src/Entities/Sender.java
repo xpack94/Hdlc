@@ -33,6 +33,14 @@ public class Sender {
 		this.fileService=new FileService();
 	}
 	
+	/**
+	 * le controlleur de cette classe 
+	 * @param le lien du fichier a lire et envoyer 
+	 * @param le numero du port 
+	 * @param le nom de la machine serveur 
+	 * 
+	 * 
+	 * **/
 	public void messageSenderControler(String filePath,int port,String host){
 		// on prépare les données a envoyer 
 		List<String> dataToSend=this.prepareSending(filePath);
@@ -42,7 +50,12 @@ public class Sender {
 		
 	}
 	
-	
+	/**
+	 * prepare tout les donnée a envoyer au receveur 
+	 * @param le lien du fichier a lire et envoyer 
+	 * 
+	 * 
+	 * **/
 	public List<String> prepareSending(String filePath){
 		
 		// on li le fichier a envoyér 

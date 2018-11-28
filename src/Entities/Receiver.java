@@ -26,6 +26,11 @@ public class Receiver {
 		this.frameService=new FrameService();
 	}
 	
+	/**
+	 * le conrolleur de la classe 
+	 * @param le numero du port 
+	 * 
+	 * **/
 	public void receiverController(int port){
 		this.createServer(port);
 		this.receive();
@@ -69,6 +74,11 @@ public class Receiver {
          
 		
 	}
+	/**
+	 * methode qui s'occupe gerer tout les trames reçu 
+	 * 
+	 * @param la liste des trames reçu 
+	 * **/
 	private void handleReceivedWindowMessages(List<String> receivedMessages){
 		for(String receivedMessage:receivedMessages){
 			if(!isEnd(receivedMessage)){

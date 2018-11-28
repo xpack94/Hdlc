@@ -24,8 +24,9 @@ public class Sender {
 	private FrameService frameService;
 	private FileService fileService;
 	private int WINDOW_WIDTH=8; // la taille d'une fenetre a envoyer est de 8 trame 
+	// mettre a true pour simuler des erreurs 
 	private boolean FLIPBITS=false;
-	private boolean REMOVEBITS=true;
+	private boolean REMOVEBITS=false;
 	
 	public Sender(){
 		this.frameService=new FrameService();

@@ -75,6 +75,14 @@ public class Receiver {
          
 		
 	}
+	
+	/**
+	 * @param le nombre de trames a renvoyer 
+	 * 
+	 * cette méthode écoute les retransmissions de l'emetteur de la trame mal reçu 
+	 * ainsi que les trames de la meme fenetre qui suivent  
+	 * 
+	 * **/
 	synchronized
 	private void listenForRetransmission(int numberOfResentFrames){
 		InputStream input;
@@ -85,11 +93,11 @@ public class Receiver {
 			String receivedMsg="";
 			int counter=0;
 			while(counter<numberOfResentFrames){
-				receivedMsg=reader.readLine();
+				receivedMsg=reader.readLine(); // lire la trame 
 				receivedFrames.add(receivedMsg);
 				counter++;
 			}
-			this.handleReceivedWindowMessages(receivedFrames);
+			this.handleReceivedWindowMessages(receivedFrames); // gerer les trames de retransmission
 		
 		
 		
@@ -109,12 +117,14 @@ public class Receiver {
 	private void handleReceivedWindowMessages(List<String> receivedMessages){
 		int index=0;
 		int length=receivedMessages.size();
-		for(String receivedMessage:receivedMessages){
+		for(String receivedMessage:receivedMessages){ //boucler sur tout les messages reçu de la fenetre courrante 
 			if(!isEnd(receivedMessage)){
 				index++;
+				// vérification de la trame reçu 
 				if(!this.handleInput(receivedMessage)){
+					// la trame n'est pas reçu , demande de retransmission
 					this.listenForRetransmission(length-index+1);
-					break;
+					break; // sortir de la boucle car une trame n'est pas bien reçu 
 				}
 				
 			}
@@ -123,7 +133,7 @@ public class Receiver {
 	/**
 	 * 
 	 * @param la trame reçu 
-	 * 
+	 * @return un boolean qui est a true si c'est la fin de la transmission et false sinon
 	 * verifie si c'est la fin de la transmission 
 	 * 
 	 * **/
@@ -142,7 +152,7 @@ public class Receiver {
 	
 	/**
 	 * @param la trame en bits reçu par l'emetteur
-	 * 
+	 * @return un boolean qui est a true si la trame est bien reçu et false sinon 
 	 * cette methode s'occupe de verifié la validé 
 	 * 
 	 * **/
@@ -153,7 +163,7 @@ public class Receiver {
 		//verifier si le message reçu contient des erreurs
 		if(this.frameService.checkErrors(msg)){
 			this.sendRej(msg); // demande de retransmission 
-			return false;
+			return false; // la trame n'est pas reçu 
 		}else{
 			// aucune erreur n'est detéctée 
 			//on affiche alors le message envoyé 
@@ -200,7 +210,6 @@ public class Receiver {
 	 * **/
 	private void sendAck(String msg){
 		// creer la trame contenant le type RR 
-		
 		String ackFrame=this.frameService.bitConverter("A")+msg.substring(8,msg.length());
 		this.writer.println(ackFrame);
 	}

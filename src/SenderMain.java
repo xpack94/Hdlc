@@ -13,44 +13,28 @@ public class SenderMain {
 		
 			int port=args.length>1 && args[1]!=null?Integer.parseInt(args[1]):6868; // a changé pour un autre port si voulue 
 			String host =args.length>0 && args[0]!=null?args[0]:"localhost";  // a changer pour un autre domaine si voulue
-			String fileName=args.length>2 && args[2]!=null?args[2]:"/home/xpack/Desktop/test"; // a changer pour votre fichier
+			String fileName=args.length>2 && args[2]!=null?args[2]:System.getProperty("user.dir")+"/fileToread"; // a changer pour votre fichier				
 			int useBackn=args.length>3 && args[3]!=null?Integer.parseInt(args[3]):0;
-			Sender sender =new Sender();
-			sender.messageSenderControler(fileName,port,host);
+			int simulateErros=args.length>4 && args[4]!=null?Integer.parseInt(args[4]):0 ; // simulation d'erreur 0= faux 1=flip un bit , 2= suppression d'un bit
 			
+			Sender sender =new Sender();
+
+			if(simulateErros==1){
+				// interchangement d'un des bits d'une trame au hasard 
+				sender.setFLIPBITS(true);
+			}else if(simulateErros==2){
+				// suppression d'un des bits d'une trame au hasard 
+				sender.setREMOVEBITS(true);
+			}else if(simulateErros==3){
+				//simulation des deux a la fois 
+				// suppression d'un bit et interchangement d'un autres
+				sender.setFLIPBITS(true);
+				sender.setREMOVEBITS(true);
+			}
+			
+			
+			sender.messageSenderControler(fileName,port,host);
 		
-		
-		/*FrameService fService=new FrameService();
-		String w="class ";
-		String type="i";
-		String num="6";
-		String bitType=fService.bitConverter(type);
-		String bitNum=fService.bitConverter(num);
-		String bitW=fService.bitConverter(w);
-		String crc =fService.createCrc(bitType+bitNum+bitW);
-		String conv=bitType+bitNum+bitW+crc;
-		System.out.println("before stuffing "+fService.checkErrors(conv));
-		String stuffed=fService.bitStuffing(conv);
-		String unStuffed=fService.removeBitStuffing(stuffed);
-		System.out.println(stuffed);
-		
-		System.out.println("after un-stuffing "+fService.removeBitStuffing(stuffed));
-		System.out.println("before stuffing "+fService.checkErrors(conv));
-		System.out.println("after stuffing "+fService.checkErrors(stuffed));
-		System.out.println("affter unstuffing "+fService.checkErrors(unStuffed));
-		System.out.println(stuffed);
-		System.out.println(unStuffed);
-		*/
-		/*String s ="11010011101101100011011011000110000101110011011100110010000010010000100111110";
-		String afterStuffing=new FrameService().bitStuffing(s);
-		System.out.println("after stuffing "+afterStuffing);
-		String afterUnstuffing=new FrameService().removeBitStuffing(s);
-		System.out.println("cheking errros before stufing "+new FrameService().checkErrors(s));
-		System.out.println("cheking errros after stuffing "+new FrameService().checkErrors(afterStuffing));
-		System.out.println("after unstuffing "+afterUnstuffing);
-		System.out.println("cheking errors after un-stuffing "+new FrameService().checkErrors(afterUnstuffing));
-		System.out.println(s.equals(afterUnstuffing));
-		*/
 		
 	}
 

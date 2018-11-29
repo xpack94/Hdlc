@@ -1,11 +1,11 @@
-package Tests;
+package Common;
 
 import java.util.List;
 import java.util.Random;
 
 import Definitions.Frame;
 
-public class Test {
+public class ErrorSimulator {
 
 		
 	/**
@@ -28,17 +28,26 @@ public class Test {
 	
 	
 	/**
-	 * efface une trame au hasard 
+	 * efface un bit d'une trame au hasard au hasard 
 	 * @param la liste des trames 
 	 * @return la meme liste de trame mais avec une trame effacé 
 	 * 
 	 * 
 	 * **/
 	public static List<String> removeFrame(List<String> data){
-		List<String> frames = data;
+	
 		int randomFrameIndex=new Random().nextInt(data.size()-1); // generer un nombre au hasard 
-		frames.remove(randomFrameIndex);
-		return frames;
+		String chosenString=data.get(randomFrameIndex);
+		String extractedData=chosenString.substring(13,chosenString.length()); 
+		int upperBound=extractedData.length()-16;
+		int lowerBound=8;
+		int randomBitToRemove=new Random().nextInt(upperBound-lowerBound)+lowerBound;
+		String afterRemove=extractedData.substring(0,randomBitToRemove)+
+				extractedData.substring(randomBitToRemove+1,extractedData.length());
+		
+		String dataToPut=chosenString.substring(0,13)+afterRemove; // la nouvelle trame 
+		data.set(randomFrameIndex,dataToPut);
+		return data;
 	}
 	
 	

@@ -14,8 +14,7 @@ import java.util.List;
 import Definitions.Frame;
 import Services.FileService;
 import Services.FrameService;
-import Tests.Test;
-
+import Common.ErrorSimulator; ;
 public class Sender {
 
 	
@@ -27,7 +26,7 @@ public class Sender {
 	// mettre a true pour simuler des erreurs 
 	private Socket socket;
 	private DataOutputStream dOut;
-	private boolean FLIPBITS=true;
+	private boolean FLIPBITS=false;
 	private boolean REMOVEBITS=false;
 	private List<Frame> frames;
 	public Sender(){
@@ -45,13 +44,11 @@ public class Sender {
 	 * **/
 	public void messageSenderControler(String filePath,int port,String host){
 		// on prépare les données a envoyer 
-		this.frames=this.prepareSending(filePath);
-		
-		// on fait la conversion des trames en bits et on retourne le resultat
-		List<String> dataToSend=frameService.dataToBinary(this.frames);
-
-		// on envoie les données 
-		this.send(dataToSend,port,host);
+		List <String>dataToSend=this.prepareSending(filePath);
+	
+		if(dataToSend.size()>1)
+			// on envoie les données 
+			this.send(dataToSend,port,host);
 		
 	}
 	
@@ -61,16 +58,17 @@ public class Sender {
 	 * 
 	 * 
 	 * **/
-	public List<Frame> prepareSending(String filePath){
+	public List<String> prepareSending(String filePath){
 		
 		// on li le fichier a envoyér 
 		List<String> data=this.fileService.readFile(filePath);
 		
 		// on cree une liste de trames
-		List<Frame>frames=this.frameService.createFrames(data);
+		this.frames=this.frameService.createFrames(data);
 		
-	
-		return frames;
+		// on fait la conversion des trames en bits et on retourne le resultat
+		List<String> dataToSend=frameService.dataToBinary(this.frames);
+		return dataToSend;
 	}
 	
 	
@@ -101,12 +99,12 @@ public class Sender {
 	         int windowCounter=0;
 	         // simulation d'erreur
 	         if(this.FLIPBITS){
-	        	 //inverser un des bits d'une des trames 
-	        	 data=new Test().flipBits(data);
+	        	 //inverser un des bits d'une des trames au hasard
+	        	 data=new ErrorSimulator().flipBits(data);
 	         }
 	         if(this.REMOVEBITS){
-	        	 //supprimer une des trames au hasard 
-	        	 data=new Test().removeFrame(data);
+	        	 //supprimer un bits d'une trame au hasard 
+	        	 data=new ErrorSimulator().removeFrame(data);
 	         }
 	       
 	        
@@ -115,16 +113,13 @@ public class Sender {
             	writer.println(data.get(i));
             	if((i+1)%this.WINDOW_WIDTH==0 && i!=0){
             		// changement de fenetre 
-            		
             		this.readResponses(data,windowCounter,0);
             		windowCounter+=this.WINDOW_WIDTH;
-            	}
-            	
+            	}	
             	
             }
             if(data.size()%this.WINDOW_WIDTH!=0){
             	this.readResponses(data,windowCounter,0);
-            	
             }
            
             System.out.println("fin de la transmission!");
@@ -138,22 +133,37 @@ public class Sender {
 			e.printStackTrace();
 		}
 	}
+	/**
+	 * @param liste de toutes les trames 
+	 * @param l'indice du commencement de la retransmission
+	 * @param l'indice de la fin de la retransmission
+	 * 
+	 * 
+	 * cette méthode s'occupe de faire la retransmission d'une trame erronée
+	 * ainsi que toutes les trames qui la suivent qui sont de la meme fenetre que la 
+	 * trame perdue
+	 * **/
 	synchronized
 	private void resend(List<String> data,int from,int to){
-		String reEncodedFrame=this.reEncode(data,from,to);
+		String reEncodedFrame=this.reEncode(data,from); // refaire l'encodage de la trame perdue 
+		int length=data.size();
+		int boundry=length>to?to:length;
 		data.set(from,reEncodedFrame);
-		for(int i=from;i<to;i++){
+		for(int i=from;i<boundry;i++){
 			writer.println(data.get(i));
 		}
-		this.readResponses(data, to-this.WINDOW_WIDTH,to-from);
+		this.readResponses(data, to-this.WINDOW_WIDTH,to-from); // gérer les reponse du receveur aprés avoir reçu les trames retransmitent 
 		
 	}
 	
-	private String reEncode(List<String> frames,int index,int num){
+	/**
+	 * @param la liste des trames 
+	 * @param l'indice de la trame a ré-encoder 
+	 * 
+	 * **/
+	private String reEncode(List<String> frames,int index){
 		Frame frameToReEncode =this.frames.get(index);
-		String reEncodedFrame=frameService.handleOneFrame(frameToReEncode);		
-		String f=reEncodedFrame.substring(8,reEncodedFrame.length()-8);
-		
+		String reEncodedFrame=frameService.handleOneFrame(frameToReEncode); // refaire l'encodage de la trame perdue 				
 		return reEncodedFrame;
 	}
 	
@@ -214,6 +224,23 @@ public class Sender {
 		}
 		return true;
 	}
+
+	public boolean isFLIPBITS() {
+		return FLIPBITS;
+	}
+
+	public void setFLIPBITS(boolean fLIPBITS) {
+		FLIPBITS = fLIPBITS;
+	}
+
+	public boolean isREMOVEBITS() {
+		return REMOVEBITS;
+	}
+
+	public void setREMOVEBITS(boolean rEMOVEBITS) {
+		REMOVEBITS = rEMOVEBITS;
+	}
+	
 	
 	
 }

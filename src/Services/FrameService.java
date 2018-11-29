@@ -49,9 +49,13 @@ public class FrameService {
 		return toBinary;
 	}
 	
-	public String handleOneFrame(Frame frame){
-
-		
+	/**
+	 * methode qui s'occupe de convertir et de faire le bitstuffing sure une seule trame donnée
+	 * 
+	 * @param la trame a gérer 
+	 * 
+	 * **/
+	public String handleOneFrame(Frame frame){		
 		return frame.getFLAG()+				
 				this.bitStuffing(
 						this.bitConverter(frame.getType())+
@@ -60,9 +64,7 @@ public class FrameService {
 						frame.getCrc()
 						)+
 				frame.getFLAG();
-				
-		
-		
+
 	}
 	
 	
@@ -150,8 +152,9 @@ public class FrameService {
 	 * 
 	 * **/
 	public String bitConverter(String data){
-		return new BigInteger(data.getBytes()).toString(2);
-		
+		if(data.length()>0)
+			return new BigInteger(data.getBytes()).toString(2);
+		return "";
 	}
 	
 	/**
@@ -160,7 +163,9 @@ public class FrameService {
 	 * @param la trame en bits 
 	 * **/
 	public String fromBinaryToString(String data){
-		return new String(new BigInteger(data, 2).toByteArray());
+		if(data.length()>0)
+			return new String(new BigInteger(data, 2).toByteArray());
+		return "";
 	}
 	
 	
@@ -170,49 +175,20 @@ public class FrameService {
 	 * 
 	 * @return une string contenant les données en entrée ainsi que des bits rajouté d'ou le nom bit stuffing
 	 * **/
-	/*public String bitStuffing(String data){
-		 
-		int cnt = 0; 
-	        String s = ""; 
-	        for (int i = 0; i < data.length(); i++) { 
-	            char ch = data.charAt(i); 
-	            if (ch == '1') { 
-	                cnt++; 
-	                if (cnt < 5) 
-	                    s += ch; 
-	                else { 
-	                    s = s + ch + '0'; 
-	                    cnt = 0; 
-	                } 
-	            } 
-	            else { 
-	                s += ch; 
-	                cnt = 0; 
-	            }
-	        }
-	        return s;
-		
-		
-	}*/
-	
 	public String bitStuffing(String data){
 	
 		 int counter = 0;
 		 String res = new String();
-		 for(int i=0;i<data.length();i++)
-         {
-            if(data.charAt(i) == '1')
-                 {
+		 for(int i=0;i<data.length();i++){
+            if(data.charAt(i) == '1'){
                      counter++;
                      res = res + data.charAt(i);
                  }
-            else
-                 {
+            else{
                      res = res + data.charAt(i);
                      counter = 0;
                  }
-            if(counter == 5)
-                 {	
+            if(counter == 5) {	
                      res = res + '0';
                      counter = 0;
                  }

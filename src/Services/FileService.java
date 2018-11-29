@@ -43,11 +43,11 @@ public class FileService {
 				}
 			} catch (IOException e) {
 				// TODO Auto-generated catch block
-				e.printStackTrace();
+				System.out.println("erreur lors de la lecture du fichier "+filePath);
 			}
 			
 		}catch(FileNotFoundException e){
-			System.out.println("le fichier données n'est pas trouvé ");
+			System.out.println("le fichier "+filePath+" n'est pas trouvé ");
 		}
 		
 		
